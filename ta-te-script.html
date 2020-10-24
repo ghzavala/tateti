@@ -95,7 +95,7 @@
                 boton.classList.add("btn-primary")
                 boton.classList.remove("btn-outline-dark")
 
-                console.log(evento)
+                //console.log(evento)
 
                 //log de jugadas
                 let jugada = {
@@ -115,7 +115,8 @@
                 cantidadJugadas += 1
 
                 if( cantidadJugadas < 5 ){
-                    elijePC()
+                    //elijePC()
+                    enviarJugadas()
                 }
                 else{
                     console.log(jugadas)
@@ -123,7 +124,23 @@
             }
         })
 
+        // comunicacion con json.io
 
+        const enviarJugadas = async () => {
+
+            const configs = {
+					method : "POST",
+					headers : {
+						"Content-Type" : "application/json"
+					},
+					body : JSON.stringify(jugadas)
+				}
+
+				await fetch("https://jsonbox.io/box_14888aa3086df9bb1382", configs)
+
+        }
+
+        
 
     </script>
 </html>
