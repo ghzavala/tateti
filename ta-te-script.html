@@ -31,7 +31,7 @@
             <section class="row border-top border-bottom">
                 
                 <div class="col-4 p-3">
-                    <button type="button" class="btn btn-outline-dark w-25 disabled" disabled>?</button>
+                    <button type="button" class="btn btn-outline-dark w-25">?</button>
                 </div>
                 <div class="col-4 p-3 border-left border-right">
                     <button type="button" class="btn btn-outline-dark w-25">?</button>
@@ -58,10 +58,42 @@
         </main>
     </body>
     <script>
-        const boton = document.querySelectorAll("button")
+        const botones = document.querySelectorAll("button")
+        let cantidadJugadas = 0
 
-        boton.forEach(element => {
-            element.setAttribute("disabled", true)
-        });
+        console.log(botones)
+
+        const elijePC = () => {
+            let randomPC 
+            do {
+                randomPC = parseInt(Math.random() * 9)
+                console.log(randomPC)
+            } while( botones[randomPC].getAttribute("disabled") == "true" )
+
+            botones[randomPC].setAttribute("disabled", true)
+            botones[randomPC].innerHTML = "O"
+            botones[randomPC].classList.add("btn-secondary")
+            botones[randomPC].classList.remove("btn-outline-dark")
+            
+        }
+
+        botones.forEach(boton => {
+            boton.onclick = (evento) => {
+                boton.setAttribute("disabled", true)
+                boton.innerHTML = "X"
+                boton.classList.add("btn-primary")
+                boton.classList.remove("btn-outline-dark")
+
+                // verificar cuantos quedan libres
+                cantidadJugadas += 1
+
+                if( cantidadJugadas < 5 ){
+                    elijePC()
+                }
+            }
+        })
+
+
+
     </script>
 </html>
