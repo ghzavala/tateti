@@ -44,25 +44,45 @@
             <!-- Fila #3 -->
             <section class="row">
                 
-                <div class="col-4">
+                <div class="col-4 p-3">
                     <button type="button" class="btn btn-outline-dark w-25">?</button>
                 </div>
-                <div class="col-4 border-left border-right">
+                <div class="col-4 p-3 border-left border-right">
                     <button type="button" class="btn btn-outline-dark w-25">?</button>
                 </div>
-                <div class="col-4">
+                <div class="col-4 p-3">
                     <button type="button" class="btn btn-outline-dark w-25">?</button>
                 </div>
 
             </section>
+
         </main>
+
+        <!--- botón para inicializar juego --->
+        <button type="button" id="leer-datos" class="btn btn-success mt-5">Refrescar juego</button>
+        <button type="button" id="inicializar" class="btn btn-danger mt-5" disabled>Incializar juego</button>
+
     </body>
     <script>
-        const botones = document.querySelectorAll("button")
+        const botones = document.querySelector("main"). querySelectorAll("button")
+        const boton_inicializar = document.querySelector("#inicializar")
+        const boton_leerdatos = document.querySelector("#leer-datos")
+        let nombreJugador = ""
+
         let cantidadJugadas = 0
         let jugadas = []
 
-        console.log(botones)
+        boton_leerdatos.onclick = () => {
+            leerJugadas()
+            if(jugadas.length > 0){ boton_inicializar.removeAttribute("disabled") }
+            actualizarTablero()
+        }
+        
+        boton_inicializar.onclick = () => {
+
+            borrarJson()
+            boton_inicializar.setAttribute("disabled", true)
+        }
 
         const elijePC = () => {
             let randomPC 
@@ -70,12 +90,12 @@
                 randomPC = parseInt(Math.random() * 9)
                 console.log(randomPC)
             } while( botones[randomPC].getAttribute("disabled") == "true" )
-
+/*
             botones[randomPC].setAttribute("disabled", true)
             botones[randomPC].innerHTML = "O"
             botones[randomPC].classList.add("btn-secondary")
             botones[randomPC].classList.remove("btn-outline-dark")
-            
+*/           
             let jugadaPC = {
                     "jugador" : "",
                     "casilla" : "",
@@ -86,6 +106,8 @@
             jugadaPC.simbolo = "O"
 
             jugadas.push(jugadaPC)
+
+            enviarJugadas(jugadaPC)
         }
 
         botones.forEach(boton => {
@@ -103,20 +125,21 @@
                     "casilla" : "",
                     "simbolo" : ""
                 }
-                jugada.jugador = "Humano"
+                jugada.jugador = nombreJugador
                 jugada.casilla = Array.from(botones).indexOf(boton)
                 jugada.simbolo = "X"
 
                 jugadas.push(jugada)
 
-                console.log(jugadas)
+                //console.log(jugadas)
 
                 // verificar cuantos quedan libres
                 cantidadJugadas += 1
 
+                enviarJugadas(jugada)
+
                 if( cantidadJugadas < 5 ){
                     //elijePC()
-                    enviarJugadas()
                 }
                 else{
                     console.log(jugadas)
@@ -124,23 +147,93 @@
             }
         })
 
-        // comunicacion con json.io
+        // actualizar tablero
 
-        const enviarJugadas = async () => {
+        const actualizarTablero = () => {
+            let casillaPC = jugadas[0].casilla
+            let nombrePC = jugadas[0].jugador
+            console.log(nombrePC)
+            if(nombrePC != nombreJugador){
+                botones[casillaPC].setAttribute("disabled", true)
+                botones[casillaPC].innerHTML = "O"
+                botones[casillaPC].classList.add("btn-secondary")
+                botones[casillaPC].classList.remove("btn-outline-dark")
+            }
+
+        }
+        
+        //******************************* comunicacion con json.io
+
+        const enviarJugadas = async (jugada) => {
 
             const configs = {
 					method : "POST",
 					headers : {
 						"Content-Type" : "application/json"
 					},
-					body : JSON.stringify(jugadas)
+					body : JSON.stringify(jugada)
 				}
 
 				await fetch("https://jsonbox.io/box_14888aa3086df9bb1382", configs)
 
         }
 
+        const leerJugadas = async() => {
+
+            try {
+					const response = await fetch("https://jsonbox.io/box_14888aa3086df9bb1382")
+					const datos = await response.json()
+
+					jugadas = datos.map( item => {
+                        let jugada = {
+                            "id" : "",
+                            "jugador" : "",
+                            "casilla" : "",
+                            "simbolo" : ""
+                        }
+
+                        jugada.id = item._id
+                        jugada.jugador = item.jugador
+                        jugada.casilla = item.casilla
+                        jugada.simbolo = item.simbolo
+
+
+						return jugada
+                    
+                    })
+
+                    console.log(jugadas)
+                    console.log(jugadas.length)
+                    if(jugadas.length == 0) { boton_inicializar.setAttribute("disabled", true) }
+                }
+            catch(error){
+                alert("Ahhhhh... no tengo productos!!!!")
+            }
+
+        }
         
+        const borrarJson = async () => {
+            jugadas.forEach(element => {
+                eliminarJugada(element.id)
+            });
+        }
+        
+        const eliminarJugada = async (id) => {
+
+            const configs = {
+                    method : "DELETE",
+                    headers : { },
+                    body : ""
+                }
+
+            await fetch(`https://jsonbox.io/box_14888aa3086df9bb1382/${id}`, configs)
+
+            console.log(`https://jsonbox.io/box_14888aa3086df9bb1382/${id}`)
+        }
+
+        window.onload = () => {
+            nombreJugador = prompt("Ingrese su nombre:")
+        }
 
     </script>
 </html>
