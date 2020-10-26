@@ -59,23 +59,26 @@
         </main>
 
         <!--- botón para inicializar juego --->
-        <button type="button" id="leer-datos" class="btn btn-success mt-5">Refrescar juego</button>
-        <button type="button" id="inicializar" class="btn btn-danger mt-5" disabled>Incializar juego</button>
+        <section>
+            <button type="button" id="leer-datos" class="btn btn-success mt-5">Refrescar juego</button>
+            <button type="button" id="inicializar" class="btn btn-danger mt-5" disabled>Incializar juego</button>
+        </section>
 
+        <sectionm class="container">
+            <h2>Te toca a ti</h2>
+        </section>
     </body>
     <script>
         const botones = document.querySelector("main"). querySelectorAll("button")
         const boton_inicializar = document.querySelector("#inicializar")
         const boton_leerdatos = document.querySelector("#leer-datos")
+        const mensaje = document.querySelector("h2")
         let nombreJugador = ""
 
-        let cantidadJugadas = 0
         let jugadas = []
 
         boton_leerdatos.onclick = () => {
             leerJugadas()
-            if(jugadas.length > 0){ boton_inicializar.removeAttribute("disabled") }
-            actualizarTablero()
         }
         
         boton_inicializar.onclick = () => {
@@ -84,40 +87,12 @@
             boton_inicializar.setAttribute("disabled", true)
         }
 
-        const elijePC = () => {
-            let randomPC 
-            do {
-                randomPC = parseInt(Math.random() * 9)
-                console.log(randomPC)
-            } while( botones[randomPC].getAttribute("disabled") == "true" )
-/*
-            botones[randomPC].setAttribute("disabled", true)
-            botones[randomPC].innerHTML = "O"
-            botones[randomPC].classList.add("btn-secondary")
-            botones[randomPC].classList.remove("btn-outline-dark")
-*/           
-            let jugadaPC = {
-                    "jugador" : "",
-                    "casilla" : "",
-                    "simbolo" : ""
-            }
-            jugadaPC.jugador = "Computadora"
-            jugadaPC.casilla = randomPC
-            jugadaPC.simbolo = "O"
-
-            jugadas.push(jugadaPC)
-
-            enviarJugadas(jugadaPC)
-        }
-
         botones.forEach(boton => {
             boton.onclick = (evento) => {
                 boton.setAttribute("disabled", true)
                 boton.innerHTML = "X"
                 boton.classList.add("btn-primary")
                 boton.classList.remove("btn-outline-dark")
-
-                //console.log(evento)
 
                 //log de jugadas
                 let jugada = {
@@ -129,37 +104,68 @@
                 jugada.casilla = Array.from(botones).indexOf(boton)
                 jugada.simbolo = "X"
 
-                jugadas.push(jugada)
-
-                //console.log(jugadas)
-
-                // verificar cuantos quedan libres
-                cantidadJugadas += 1
-
                 enviarJugadas(jugada)
 
-                if( cantidadJugadas < 5 ){
-                    //elijePC()
-                }
-                else{
-                    console.log(jugadas)
-                }
+                verificarGanador()
+                if( mensaje.innerHTML != "¡¡¡GANASTE!!!" && mensaje.innerHTML != "Perdiste... :(" ){ mensaje.innerHTML = "Esperando jugada del oponente. Presione refrescar." }
+
             }
         })
 
         // actualizar tablero
 
         const actualizarTablero = () => {
-            let casillaPC = jugadas[0].casilla
-            let nombrePC = jugadas[0].jugador
-            console.log(nombrePC)
-            if(nombrePC != nombreJugador){
-                botones[casillaPC].setAttribute("disabled", true)
-                botones[casillaPC].innerHTML = "O"
-                botones[casillaPC].classList.add("btn-secondary")
-                botones[casillaPC].classList.remove("btn-outline-dark")
+            if( jugadas.length == 0 ){ // Si no hay jugadas anteriores se reestablece el tablero
+                botones.forEach( boton => {
+                    boton.removeAttribute("disabled")
+                    boton.innerHTML = "?"
+                    boton.classList.remove("btn-primary")
+                    boton.classList.remove("btn-secondary")
+                    boton.classList.add("btn-outline-dark")
+                })
+                mensaje.innerHTML = "A ponerse de acuerdo en quién comienza!"
+            } else { // escribe en el tablero la jugada del oponente
+                let casillaPC = jugadas[0].casilla
+                let nombrePC = jugadas[0].jugador
+
+                if(nombrePC != nombreJugador){
+                    botones[casillaPC].setAttribute("disabled", true)
+                    botones[casillaPC].innerHTML = "O"
+                    botones[casillaPC].classList.add("btn-secondary")
+                    botones[casillaPC].classList.remove("btn-outline-dark")
+                }
+                verificarGanador()
+                if( mensaje.innerHTML != "¡¡¡GANASTE!!!" && mensaje.innerHTML != "Perdiste... :(" ){ mensaje.innerHTML = "Te toca a ti" }
             }
 
+        }
+
+        const verificarGanador = () => {
+            let fichas = []
+            fichas[0] = botones[0].innerHTML+botones[3].innerHTML+botones[6].innerHTML
+            fichas[1] = botones[1].innerHTML+botones[4].innerHTML+botones[7].innerHTML
+            fichas[2] = botones[2].innerHTML+botones[5].innerHTML+botones[8].innerHTML
+
+            fichas[3] = botones[0].innerHTML+botones[1].innerHTML+botones[2].innerHTML
+            fichas[4] = botones[3].innerHTML+botones[4].innerHTML+botones[5].innerHTML
+            fichas[5] = botones[6].innerHTML+botones[7].innerHTML+botones[8].innerHTML
+
+            fichas[6] = botones[0].innerHTML+botones[4].innerHTML+botones[8].innerHTML
+            fichas[7] = botones[2].innerHTML+botones[4].innerHTML+botones[6].innerHTML
+            
+            fichas.forEach(linea => {
+                if( linea == "XXX" ){
+                    mensaje.innerHTML = "¡¡¡GANASTE!!!"
+                    botones.forEach( boton => {
+                        boton.setAttribute("disabled", true)
+                    })
+                } else if( linea == "OOO"){
+                    mensaje.innerHTML = "Perdiste... :("
+                    botones.forEach( boton => {
+                        boton.setAttribute("disabled", true)
+                    })
+                }
+            })
         }
         
         //******************************* comunicacion con json.io
@@ -197,17 +203,18 @@
                         jugada.casilla = item.casilla
                         jugada.simbolo = item.simbolo
 
-
 						return jugada
                     
                     })
-
-                    console.log(jugadas)
-                    console.log(jugadas.length)
-                    if(jugadas.length == 0) { boton_inicializar.setAttribute("disabled", true) }
+                    actualizarTablero()
+                    if(jugadas.length == 0) { 
+                        boton_inicializar.setAttribute("disabled", true)
+                    } else {
+                        boton_inicializar.removeAttribute("disabled")
+                    }
                 }
             catch(error){
-                alert("Ahhhhh... no tengo productos!!!!")
+                alert("No hay jugadas anteriores...")
             }
 
         }
@@ -215,7 +222,8 @@
         const borrarJson = async () => {
             jugadas.forEach(element => {
                 eliminarJugada(element.id)
-            });
+            })
+
         }
         
         const eliminarJugada = async (id) => {
@@ -228,11 +236,12 @@
 
             await fetch(`https://jsonbox.io/box_14888aa3086df9bb1382/${id}`, configs)
 
-            console.log(`https://jsonbox.io/box_14888aa3086df9bb1382/${id}`)
         }
 
         window.onload = () => {
             nombreJugador = prompt("Ingrese su nombre:")
+
+            leerJugadas()
         }
 
     </script>
