@@ -12,7 +12,7 @@
     </head>
     <body class="text-center">
         <h1 class="p-3 m-3 display-4">TA-TE-SCRIPT</h1>
-        <main class="container">
+        <main class="container" style="max-width: 540px;">
             <!-- Fila #1 -->
             <section class="row">
 
@@ -65,7 +65,7 @@
         </section>
 
         <sectionm class="container">
-            <h2>Te toca a ti</h2>
+            <h2></h2>
         </section>
     </body>
     <script>
@@ -85,6 +85,7 @@
 
             borrarJson()
             boton_inicializar.setAttribute("disabled", true)
+
         }
 
         botones.forEach(boton => {
@@ -107,7 +108,7 @@
                 enviarJugadas(jugada)
 
                 verificarGanador()
-                if( mensaje.innerHTML != "¡¡¡GANASTE!!!" && mensaje.innerHTML != "Perdiste... :(" ){ mensaje.innerHTML = "Esperando jugada del oponente. Presione refrescar." }
+                if( mensaje.innerHTML != "¡¡¡GANASTE!!!" && mensaje.innerHTML != "Perdiste... :(" && mensaje.innerHTML != "-- Empate --" ){ mensaje.innerHTML = "Esperando jugada del oponente. Presione refrescar." }
 
             }
         })
@@ -135,7 +136,7 @@
                     botones[casillaPC].classList.remove("btn-outline-dark")
                 }
                 verificarGanador()
-                if( mensaje.innerHTML != "¡¡¡GANASTE!!!" && mensaje.innerHTML != "Perdiste... :(" ){ mensaje.innerHTML = "Te toca a ti" }
+                if( mensaje.innerHTML != "¡¡¡GANASTE!!!" && mensaje.innerHTML != "Perdiste... :(" && mensaje.innerHTML != "-- Empate --"){ mensaje.innerHTML = "Te toca a ti" }
             }
 
         }
@@ -153,21 +154,32 @@
             fichas[6] = botones[0].innerHTML+botones[4].innerHTML+botones[8].innerHTML
             fichas[7] = botones[2].innerHTML+botones[4].innerHTML+botones[6].innerHTML
             
-            fichas.forEach(linea => {
-                if( linea == "XXX" ){
+            for( index = 0; index < fichas.length; index++){
+                if( fichas[index] == "XXX" ){
                     mensaje.innerHTML = "¡¡¡GANASTE!!!"
                     botones.forEach( boton => {
                         boton.setAttribute("disabled", true)
                     })
-                } else if( linea == "OOO"){
+                    break
+                } else if( fichas[index] == "OOO"){
                     mensaje.innerHTML = "Perdiste... :("
                     botones.forEach( boton => {
                         boton.setAttribute("disabled", true)
                     })
+                    break
+                } else {
+                    let movimientosDisponibles = false
+                    botones.forEach( boton => {
+                        if( boton.getAttribute("disabled") != "true"){
+                            movimientosDisponibles = true
+                        }
+                    })
+                    if(movimientosDisponibles == false){ mensaje.innerHTML = "-- Empate --"}
                 }
-            })
+            }
+            
         }
-        
+
         //******************************* comunicacion con json.io
 
         const enviarJugadas = async (jugada) => {
@@ -223,7 +235,6 @@
             jugadas.forEach(element => {
                 eliminarJugada(element.id)
             })
-
         }
         
         const eliminarJugada = async (id) => {
@@ -240,7 +251,7 @@
 
         window.onload = () => {
             nombreJugador = prompt("Ingrese su nombre:")
-
+            
             leerJugadas()
         }
 
